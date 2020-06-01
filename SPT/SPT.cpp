@@ -63,14 +63,14 @@ bool ProcessTree(std::wstring const &sptFilePath)
   FILE *f = NULL;
   if (_wfopen_s(&f, sptFilePath.c_str(), L"rb"))
   {
-    std::wcerr << "Failed to open: " << sptFilePath << std::endl;
+    std::cerr << "Failed to open: " << w2a(sptFilePath).c_str() << std::endl;
     return false;
   }
   fseek(f, 0, SEEK_END);
   long size = ftell(f);
   if (!size)
   {
-    std::wcerr << "File corrupted: " << sptFilePath << std::endl;
+    std::cerr << "File corrupted: " << w2a(sptFilePath).c_str() << std::endl;
     fclose(f);
     return false;
   }
@@ -81,6 +81,7 @@ bool ProcessTree(std::wstring const &sptFilePath)
   CSpeedTreeRT *tree = new CSpeedTreeRT;
   if (!tree->LoadTree(buf, static_cast<unsigned int>(size)))
   {
+    std::cerr << "Couldn't load the tree: " << w2a(sptFilePath).c_str() << std::endl;
     free(buf);
     delete tree;
   }
@@ -89,7 +90,9 @@ bool ProcessTree(std::wstring const &sptFilePath)
   tree->SetBranchLightingMethod(CSpeedTreeRT::LIGHT_DYNAMIC);
   tree->SetLeafLightingMethod(CSpeedTreeRT::LIGHT_DYNAMIC);
   tree->SetFrondLightingMethod(CSpeedTreeRT::LIGHT_DYNAMIC);
+
   tree->Compute(0, tree->GetSeed());
+
   ExportTree(tree, sptFilePath);
 
   free(buf);
